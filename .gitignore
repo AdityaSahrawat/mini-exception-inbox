@@ -1,0 +1,39 @@
+# OS-specific
+.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# IDE / Editor config
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Python / Virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Node / Frontend
+node_modules/
+.next/
+out/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
