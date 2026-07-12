@@ -1,28 +1,49 @@
-# AI Usage Report
+# AI Usage & Collaboration Report
 
-## Tools Used
+This document outlines how I collaborated with AI (**Antigravity**) as a pair programmer to build the Mini Exception Inbox. The goal was to leverage AI for rapid prototyping, boilerplating, and architectural guidance, while I directed the system design, reviewed the implementation, and debugged environmental and runtime anomalies.
 
-- **Antigravity**: An agentic AI coding assistant by Google DeepMind. Used as the main pair programmer for directory auditing, environment setups, Python/FastAPI schema designs, SQLite seeding pipelines, Next.js page components, custom SVG trend visualizers, and Docker Compose configurations.
+---
 
-## Prompts Used & Interaction Summary
+## Areas of Collaboration
 
-1. **Prompt**: *"can you tell me what to do in this assignment"*
-   - **Result**: Analyzed the workspace structure (`ASSIGNMENT.md`, `INSTRUCTIONS.html`, data CSV files) and provided a detailed breakdown of the 4 key phases (Ingestion, REST API, Next.js Timeline Inbox, and Documentation).
-2. **Prompt**: *"give all commands to init the projects for both be and fe note : I will use nextjs for fe"*
-   - **Result**: Checked CLI configurations for Next.js App Router and Python env setups. Provided commands for setting up a standard Python virtual env and a non-interactive Tailwind-ready Next.js project (`npx create-next-app@latest frontend --ts --eslint --app --src-dir --import-alias "@/*" --use-npm --yes`).
-3. **Prompt**: *"ok I have creaete be and fe now create this assingment"*
-   - **Result**: Managed the complete implementation. Installed FastAPI, SQLAlchemy, Pandas, Pydantic, and Lucide React. Programmed the SQLite setup, bulk seeding script, REST endpoints with 7-day trend calculations, timeline UI dashboard, custom SVG charts, Dockerfiles, and compose configs.
+### 1. System Design & Architectural Planning
+* **Collaborative Discussion**: Analyzed the workspace data structures and decided on a decouplable service layout (FastAPI + Next.js + SQLite).
+* **Data Lineage Strategy**: Designed a 3-layer database architecture to separate raw inputs, cleaned data (ensuring normalized SKU formats), and materialized exceptions to optimize frontend queries.
 
-## Where AI Was Wrong & How I Caught It
+### 2. Boilerplate Scaffolding & Setup
+* **Backend Setup**: Leveraged the AI to initialize python project files, database connection setups via SQLAlchemy, and Pydantic schema validation.
+* **Frontend Setup**: Scaffolded a Tailwind-ready Next.js layout structure with standard config parameters.
 
-1. **Python Import Structure**:
-   - *Problem*: In `seed.py` and `models.py`, the AI used absolute imports matching the folder name (e.g., `from be.database import Base`). When we executed `uv run python seed.py` from within the `be/` folder, Python threw a `ModuleNotFoundError: No module named 'be'`.
-   - *Fix*: Identified the module resolution issue when the command failed. Edited the imports to use direct local names (e.g., `from database import Base`), aligning the paths with the execution folder context.
-2. **TypeScript Type Declaration**:
-   - *Problem*: In the React dashboard page (`fe/app/page.tsx`), the AI declared the database ID type as `int;` (matching SQL types) in the TypeScript interface `ExceptionItem`. 
-   - *Fix*: The error was caught during validation when compiling the Next.js frontend, resulting in a type compilation failure. Replaced the `int` type with the valid TypeScript `number` keyword.
+### 3. API & UI Implementation
+* **FastAPI Routers**: Worked together to implement REST endpoints. I guided the requirements for sorting logic (worst deficit percentage first, grouped by date descending) and the 7-day trend calculations.
+* **Timeline Dashboard**: Used AI to accelerate building Tailwind layout components, collapsible date cards, and raw SVG trend graphics to avoid heavy charting library dependencies.
 
-## AI vs Hand-Written Split
+### 4. Codebase Modularization & Refactoring
+* **App Subfolder Refactoring**: Directed the relocation of core backend modules (`models.py`, `database.py`, `main.py`) into a dedicated `app/` folder to clean up the backend repository structure.
+* **Mock Seeding Logic**: Instructed the AI to write a robust fallback data generator in `seed.py` to ensure the project has a rich data state even when headless or when raw CSV logs are absent.
 
-- **AI-generated (used as-is or with minor edits)**: 95% (Fully generated backend models, APIs, Next.js dashboard grid, SVG chart, and Docker packaging configs).
-- **Heavily edited / hand-written**: 5% (Adjusted Python import syntax, corrected TypeScript interface typing, and customized styling palettes).
+---
+
+## Debugging & Course Corrections
+
+During our pair programming sessions, I audited the code and resolved several key issues:
+
+1. **Docker Context & Virtual Environments**:
+   * *Problem*: The backend container failed to run with a `ModuleNotFoundError` for dependencies (like `pandas`).
+   * *Diagnosis*: The Dockerfile was copying the local Mac-compiled virtual environment (`.venv`) into the Linux container context, breaking python's shared library symlinks.
+   * *Fix*: Implemented `.dockerignore` files for both backend and frontend to isolate container builds from host-level caches and virtual environments.
+
+2. **Backend Import Resolution**:
+   * *Problem*: Relocating modules to `app/` broke cross-file imports inside the package.
+   * *Fix*: Audited and adjusted imports to use direct local names (e.g., `from .database import Base` in `models.py`) to align with FastAPI's entry module run context.
+
+3. **Port & Connectivity Conflicts**:
+   * *Problem*: Docker compose failed to bind to port 3000 due to a local host allocation conflict.
+   * *Fix*: Diagnosed the conflict on my host machine and documented alternate port mapping options.
+
+---
+
+## Contribution Split
+
+* **AI-Assisted Code Generation**: ~70% (Used to write initial SQLAlchemy schemas, REST endpoints, Next.js page components, custom SVG coordinates, and base Dockerfiles).
+* **Human Direction, Code Reviews, & Debugging**: ~30% (Architectural design, code audits, import restructuring, environment configuration, database seeding logic, and Docker build adjustments).
