@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, Date
-from database import Base
+from .database import Base
 
 class RawPlan(Base):
     __tablename__ = "raw_plan"

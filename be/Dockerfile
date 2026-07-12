@@ -30,4 +30,5 @@ EXPOSE 8000
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Run seed script to populate DB, then launch Uvicorn
-CMD python seed.py && uvicorn main:app --host 0.0.0.0 --port 8000
+CMD python seed.py && uvicorn app.main:app --host 0.0.0.0 --port 8000
+

@@ -2,8 +2,8 @@ import os
 import pandas as pd
 from datetime import datetime
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine, Base
-from models import RawPlan, RawActual, CleanPlan, CleanActual, ExceptionItem
+from app.database import SessionLocal, engine, Base
+from app.models import RawPlan, RawActual, CleanPlan, CleanActual, ExceptionItem
 
 # Path configurations
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -11,6 +11,48 @@ DATA_DIR = os.path.join(os.path.dirname(BASE_DIR), "data")
 
 PLAN_CSV = os.path.join(DATA_DIR, "production_plan.csv")
 ACTUAL_CSV = os.path.join(DATA_DIR, "actual_production.csv")
+
+# Mock sample data to fall back on if CSVs are not present
+MOCK_PLAN_DATA = [
+    {"plan_date": "2017-01-01", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 100.0},
+    {"plan_date": "2017-01-01", "plant": "PLANT-01", "sku": "FG-002", "planned_units": 150.0},
+    {"plan_date": "2017-01-02", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 120.0},
+    {"plan_date": "2017-01-02", "plant": "PLANT-02", "sku": "FG-003", "planned_units": 80.0},
+    {"plan_date": "2017-01-03", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 110.0},
+    {"plan_date": "2017-01-03", "plant": "PLANT-02", "sku": "FG-002", "planned_units": 200.0},
+    {"plan_date": "2017-01-04", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 130.0},
+    {"plan_date": "2017-01-04", "plant": "PLANT-02", "sku": "FG-003", "planned_units": 90.0},
+    {"plan_date": "2017-01-05", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 140.0},
+    {"plan_date": "2017-01-05", "plant": "PLANT-02", "sku": "FG-002", "planned_units": 210.0},
+    {"plan_date": "2017-01-06", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 150.0},
+    {"plan_date": "2017-01-06", "plant": "PLANT-02", "sku": "FG-003", "planned_units": 95.0},
+    {"plan_date": "2017-01-07", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 160.0},
+    {"plan_date": "2017-01-07", "plant": "PLANT-02", "sku": "FG-002", "planned_units": 220.0},
+]
+
+MOCK_ACTUAL_DATA = [
+    # FG-001 has a major deficit (50 vs 100) on 2017-01-01 (High exception)
+    {"date": "2017-01-01", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 50},
+    # FG-002 has a moderate deficit (130 vs 150) on 2017-01-01 (Medium exception)
+    {"date": "2017-01-01", "plant_id": "PLANT-01", "product_code": "FG-002", "units_produced": 130},
+    # FG-001 has a minor deficit but <10% (115 vs 120) on 2017-01-02 (No exception)
+    {"date": "2017-01-02", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 115},
+    # FG-003 has a major deficit (40 vs 80) on 2017-01-02 (High exception)
+    {"date": "2017-01-02", "plant_id": "PLANT-02", "product_code": "fg-003", "units_produced": 40},
+    # FG-001 has no deficit (110 vs 110) on 2017-01-03
+    {"date": "2017-01-03", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 110},
+    # FG-002 has a high deficit (100 vs 200) on 2017-01-03 (High exception)
+    {"date": "2017-01-03", "plant_id": "PLANT-02", "product_code": "FG-002", "units_produced": 100},
+    # Rest of the days to generate a 7-day trend
+    {"date": "2017-01-04", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 125},
+    {"date": "2017-01-04", "plant_id": "PLANT-02", "product_code": "FG-003", "units_produced": 88},
+    {"date": "2017-01-05", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 135},
+    {"date": "2017-01-05", "plant_id": "PLANT-02", "product_code": "FG-002", "units_produced": 195},
+    {"date": "2017-01-06", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 145},
+    {"date": "2017-01-06", "plant_id": "PLANT-02", "product_code": "FG-003", "units_produced": 90},
+    {"date": "2017-01-07", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 155},
+    {"date": "2017-01-07", "plant_id": "PLANT-02", "product_code": "FG-002", "units_produced": 215},
+]
 
 def clean_db():
     print("Dropping existing tables...")
@@ -34,9 +76,13 @@ def seed_raw_data(db: Session):
             ))
         db.bulk_save_objects(raw_plans)
         db.commit()
-        print(f"Seeded {len(raw_plans)} rows into raw_plan table.")
+        print(f"Seeded {len(raw_plans)} rows into raw_plan table from CSV.")
     else:
-        print(f"Plan CSV not found at {PLAN_CSV}")
+        print(f"Plan CSV not found at {PLAN_CSV}. Seeding mock plans...")
+        raw_plans = [RawPlan(**item) for item in MOCK_PLAN_DATA]
+        db.bulk_save_objects(raw_plans)
+        db.commit()
+        print(f"Seeded {len(raw_plans)} mock rows into raw_plan table.")
 
     # 2. Seed Raw Actual Production
     if os.path.exists(ACTUAL_CSV):
@@ -51,9 +97,13 @@ def seed_raw_data(db: Session):
             ))
         db.bulk_save_objects(raw_actuals)
         db.commit()
-        print(f"Seeded {len(raw_actuals)} rows into raw_actual table.")
+        print(f"Seeded {len(raw_actuals)} rows into raw_actual table from CSV.")
     else:
-        print(f"Actual CSV not found at {ACTUAL_CSV}")
+        print(f"Actual CSV not found at {ACTUAL_CSV}. Seeding mock actuals...")
+        raw_actuals = [RawActual(**item) for item in MOCK_ACTUAL_DATA]
+        db.bulk_save_objects(raw_actuals)
+        db.commit()
+        print(f"Seeded {len(raw_actuals)} mock rows into raw_actual table.")
 
 def process_and_clean_data(db: Session):
     print("Processing and cleaning data...")
@@ -64,18 +114,14 @@ def process_and_clean_data(db: Session):
     
     for rp in raw_plans:
         if not rp.plan_date or not rp.plant or not rp.sku or rp.planned_units is None:
-            continue  # Skip rows with missing essential data
+            continue
         
-        # Clean SKU: strip whitespace and convert to uppercase
         clean_sku = rp.sku.strip().upper()
-        # Clean plant: strip whitespace and convert to uppercase
         clean_plant = rp.plant.strip().upper()
         
-        # Parse date
         try:
             parsed_date = datetime.strptime(rp.plan_date.strip(), "%Y-%m-%d").date()
         except ValueError:
-            # Skip rows with invalid date formats
             continue
             
         clean_plans.append(CleanPlan(
@@ -119,11 +165,9 @@ def process_and_clean_data(db: Session):
 def detect_and_seed_exceptions(db: Session):
     print("Detecting exceptions...")
     
-    # Fetch all clean plans and convert to dictionary for fast matching
     plans = db.query(CleanPlan).all()
     actuals = db.query(CleanActual).all()
     
-    # Store actual production in a dictionary for fast lookup: (date, plant_id, product_code) -> units_produced
     actual_dict = {}
     for act in actuals:
         key = (act.date, act.plant_id, act.product_code)
@@ -134,21 +178,15 @@ def detect_and_seed_exceptions(db: Session):
     for plan in plans:
         key = (plan.date, plan.plant_id, plan.product_code)
         
-        # If there is no actual production, it means units_produced = 0
         actual_units = actual_dict.get(key, 0)
         planned_units = plan.planned_units
         
         if planned_units <= 0:
             continue
             
-        # Exception criteria: units_produced < 0.9 * planned_units
         if actual_units < 0.9 * planned_units:
-            # Deficit percentage = (Planned - Actual) / Planned * 100
             deficit_pct = ((planned_units - actual_units) / planned_units) * 100
             
-            # Severity criteria:
-            # - high if units_produced < 0.7 * planned_units (i.e. deficit > 30%)
-            # - medium otherwise (deficit between 10% and 30%)
             if actual_units < 0.7 * planned_units:
                 severity = "high"
             else:
