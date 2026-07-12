@@ -11,7 +11,7 @@ This document outlines how I collaborated with AI (**Antigravity**) as a pair pr
 * **Data Lineage Strategy**: Designed a 3-layer database architecture to separate raw inputs, cleaned data (ensuring normalized SKU formats), and materialized exceptions to optimize frontend queries.
 
 ### 2. Boilerplate Scaffolding & Setup
-* **Backend Setup**: Leveraged the AI to initialize python project files, database connection setups via SQLAlchemy, and Pydantic schema validation.
+* **Backend Setup**: Leveraged the AI to initialize python project files, database connection setups via SQLAlchemy, and Pydantic schema validation. 
 * **Frontend Setup**: Scaffolded a Tailwind-ready Next.js layout structure with standard config parameters.
 
 ### 3. API & UI Implementation

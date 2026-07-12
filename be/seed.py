@@ -14,6 +14,7 @@ ACTUAL_CSV = os.path.join(DATA_DIR, "actual_production.csv")
 
 # Mock sample data to fall back on if CSVs are not present
 MOCK_PLAN_DATA = [
+    # --- 2017-01-01 to 2017-01-07 ---
     {"plan_date": "2017-01-01", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 100.0},
     {"plan_date": "2017-01-01", "plant": "PLANT-01", "sku": "FG-002", "planned_units": 150.0},
     {"plan_date": "2017-01-02", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 120.0},
@@ -28,22 +29,31 @@ MOCK_PLAN_DATA = [
     {"plan_date": "2017-01-06", "plant": "PLANT-02", "sku": "FG-003", "planned_units": 95.0},
     {"plan_date": "2017-01-07", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 160.0},
     {"plan_date": "2017-01-07", "plant": "PLANT-02", "sku": "FG-002", "planned_units": 220.0},
+    # --- 2017-01-08 to 2017-01-14 ---
+    {"plan_date": "2017-01-08", "plant": "PLANT-03", "sku": "FG-004", "planned_units": 50.0},
+    {"plan_date": "2017-01-08", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 170.0},
+    {"plan_date": "2017-01-09", "plant": "PLANT-03", "sku": "FG-004", "planned_units": 55.0},
+    {"plan_date": "2017-01-09", "plant": "PLANT-04", "sku": "FG-005", "planned_units": 300.0},
+    {"plan_date": "2017-01-10", "plant": "PLANT-03", "sku": "FG-004", "planned_units": 60.0},
+    {"plan_date": "2017-01-10", "plant": "PLANT-04", "sku": "FG-005", "planned_units": 310.0},
+    {"plan_date": "2017-01-11", "plant": "PLANT-03", "sku": "FG-004", "planned_units": 65.0},
+    {"plan_date": "2017-01-11", "plant": "PLANT-01", "sku": "FG-002", "planned_units": 180.0},
+    {"plan_date": "2017-01-12", "plant": "PLANT-03", "sku": "FG-004", "planned_units": 70.0},
+    {"plan_date": "2017-01-12", "plant": "PLANT-04", "sku": "FG-005", "planned_units": 320.0},
+    {"plan_date": "2017-01-13", "plant": "PLANT-03", "sku": "FG-004", "planned_units": 75.0},
+    {"plan_date": "2017-01-13", "plant": "PLANT-01", "sku": "FG-001", "planned_units": 180.0},
+    {"plan_date": "2017-01-14", "plant": "PLANT-03", "sku": "FG-004", "planned_units": 80.0},
+    {"plan_date": "2017-01-14", "plant": "PLANT-04", "sku": "FG-005", "planned_units": 330.0},
 ]
 
 MOCK_ACTUAL_DATA = [
-    # FG-001 has a major deficit (50 vs 100) on 2017-01-01 (High exception)
+    # --- 2017-01-01 to 2017-01-07 ---
     {"date": "2017-01-01", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 50},
-    # FG-002 has a moderate deficit (130 vs 150) on 2017-01-01 (Medium exception)
     {"date": "2017-01-01", "plant_id": "PLANT-01", "product_code": "FG-002", "units_produced": 130},
-    # FG-001 has a minor deficit but <10% (115 vs 120) on 2017-01-02 (No exception)
     {"date": "2017-01-02", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 115},
-    # FG-003 has a major deficit (40 vs 80) on 2017-01-02 (High exception)
     {"date": "2017-01-02", "plant_id": "PLANT-02", "product_code": "fg-003", "units_produced": 40},
-    # FG-001 has no deficit (110 vs 110) on 2017-01-03
     {"date": "2017-01-03", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 110},
-    # FG-002 has a high deficit (100 vs 200) on 2017-01-03 (High exception)
     {"date": "2017-01-03", "plant_id": "PLANT-02", "product_code": "FG-002", "units_produced": 100},
-    # Rest of the days to generate a 7-day trend
     {"date": "2017-01-04", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 125},
     {"date": "2017-01-04", "plant_id": "PLANT-02", "product_code": "FG-003", "units_produced": 88},
     {"date": "2017-01-05", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 135},
@@ -52,7 +62,28 @@ MOCK_ACTUAL_DATA = [
     {"date": "2017-01-06", "plant_id": "PLANT-02", "product_code": "FG-003", "units_produced": 90},
     {"date": "2017-01-07", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 155},
     {"date": "2017-01-07", "plant_id": "PLANT-02", "product_code": "FG-002", "units_produced": 215},
+    # --- 2017-01-08 to 2017-01-14 ---
+    # FG-004 has high deficit on 2017-01-08 (30 vs 50)
+    {"date": "2017-01-08", "plant_id": "PLANT-03", "product_code": "FG-004", "units_produced": 30},
+    {"date": "2017-01-08", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 168},
+    # FG-004 has medium deficit on 2017-01-09 (48 vs 55)
+    {"date": "2017-01-09", "plant_id": "PLANT-03", "product_code": "FG-004", "units_produced": 48},
+    # FG-005 has high deficit on 2017-01-09 (180 vs 300)
+    {"date": "2017-01-09", "plant_id": "PLANT-04", "product_code": "FG-005", "units_produced": 180},
+    {"date": "2017-01-10", "plant_id": "PLANT-03", "product_code": "FG-004", "units_produced": 58},
+    # FG-005 has medium deficit on 2017-01-10 (270 vs 310)
+    {"date": "2017-01-10", "plant_id": "PLANT-04", "product_code": "FG-005", "units_produced": 270},
+    {"date": "2017-01-11", "plant_id": "PLANT-03", "product_code": "FG-004", "units_produced": 64},
+    # FG-002 has high deficit on 2017-01-11 (100 vs 180)
+    {"date": "2017-01-11", "plant_id": "PLANT-01", "product_code": "FG-002", "units_produced": 100},
+    {"date": "2017-01-12", "plant_id": "PLANT-03", "product_code": "FG-004", "units_produced": 69},
+    {"date": "2017-01-12", "plant_id": "PLANT-04", "product_code": "FG-005", "units_produced": 315},
+    {"date": "2017-01-13", "plant_id": "PLANT-03", "product_code": "FG-004", "units_produced": 74},
+    {"date": "2017-01-13", "plant_id": "PLANT-01", "product_code": "FG-001", "units_produced": 178},
+    {"date": "2017-01-14", "plant_id": "PLANT-03", "product_code": "FG-004", "units_produced": 79},
+    {"date": "2017-01-14", "plant_id": "PLANT-04", "product_code": "FG-005", "units_produced": 328},
 ]
+
 
 def clean_db():
     print("Dropping existing tables...")
